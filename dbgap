@@ -1,0 +1,16 @@
+library(TCGAbiolinks)
+library(SummarizedExperiment)
+
+query <- GDCquery(
+  project        = "TCGA-LUAD",
+  data.category  = "Transcriptome Profiling",
+  data.type      = "Gene Expression Quantification",
+  workflow.type  = "STAR - Counts" #STAR - Counts is an RNA expression pipeline used in GDC RNA-Seq harmonization.
+
+)
+#download the files
+GDCdownload(query)
+#fix the raw files
+se <- GDCprepare(query)
+#we are doing this to prepare the data for analysis in SampleNetwork QC module, which
+#requires two input files: one with the feature activity (gene expression data) and the other containing the sample information)
