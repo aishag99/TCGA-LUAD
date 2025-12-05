@@ -1,3 +1,23 @@
 #SampleNetwork can be applied to any feature data that 
 #can be represented in the form of a matirx
 
+#extract counts
+expr_raw <- assay(se)
+
+#log transform
+datExpr <- log2(expr_raw + 1)
+
+#remove genes with zero variance
+keepGenes <- apply(datExpr, 1, var) > 0
+datExpr <- datExpr[keepGenes, ]
+
+#transpose so samples are row
+datExprT <- t(datExpr)
+
+#ensure no NAs
+datExprT <- datExprT[complete.cases(datExprT), ]
+
+#save as CSV
+write.csv(datExprT, "TCGA_LUAD_expression_for_SampleNetwork.csv")
+
+#STEP 2- PREPARE SAMPLE INFORMATION TABLE
