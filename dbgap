@@ -1,4 +1,4 @@
-s
+
 library(TCGAbiolinks)
 library(SummarizedExperiment)
 
@@ -12,9 +12,14 @@ query <- GDCquery( # searched the database and built a plan in memory.
 
 )
 #download the files
-GDCdownload(query) #downloaded the 601 individual sample files.
+#GDCdownload(query) #downloaded the 601 individual sample files.
+
+21
 #fix the raw files
-se <- GDCprepare(query) #reads all files, extracts gene count numbers, extracts sample metadata, merges them
+
+se <- GDCprepare(query) 
+
+#reads all files, extracts gene count numbers, extracts sample metadata, merges them
 #into one object, that is the Bioconductor SummarizedExperiment container.
 #SummarizedExperiment se was created by R, using the info in query, at the moment we ran the above line.
 # we named that object se when we wrote se<---...
@@ -25,14 +30,82 @@ expr_raw <- assay(se)
 #extracts the expression matrix and stores it inside the variable. a plain numeric matrix. rows are genes, columns are samples.
 
 
+
 #we are doing this to prepare the data for analysis in SampleNetwork QC module, which
 #requires two input files: one with the feature activity (gene expression data) and the other containing the sample information)
-#data needs to be log_2 transformed prior to analysis
-datExpr = log2(expr+1)
-pheno   <- as.data.frame(colData(se))
+#data needs to be log_2 transformed prior to analysis, required for samplenetwork
+datExpr = log2(expr_raw+1)
 
+# transpose for SampleNetwork (samples x genes)
+datExprT <- t(datExpr)
+
+# set rownames to TCGA barcodes
+pheno <- as.data.frame(colData(se))
+rownames(datExprT) <- pheno$barcod
 # Build sampleInfo from pheno (barcodes, disease, sex, etc.)
 # Align sampleInfo rows with datExpr columns
 # Create groupLabels (Tumor vs Normal)
 
+# ----------------------------
+# 4. SAVE EXPRESSION MATRIX CSV
+# ----------------------------
 
+write.csv(
+  datExprT,
+  file = "TCGA_LUAD_expression_matrix_for_SampleNetwork.csv",
+  row.names = TRUE
+)
+
+# ----------------------------
+# 5. BUILD SAMPLEINFO FILE
+# to check length if errors occur
+ sapply(pheno[c(
+   "sample_id",  
+ "barcode",
+"disease_type",
+"tobacco_smoking_status",
+   "gender",
+   "days_to_death",
+   "paper_T.stage"
+ )], length)
+
+
+sampleInfo <- data.frame(
+  Sample_Label = pheno$barcode,
+  Accession  = pheno$sample_id,
+  Disease   = pheno$disease_type,
+  Sex    = pheno$gender,
+  Age_at_Dx = pheno$days_to_death,
+  Tumor_Stage = pheno$paper_T.stage,
+  Smoker_Status = pheno$tobacco_smoking_status,
+  stringsAsFactors = FALSE
+)
+
+sampleInfo <- data.frame(
+  Sample_Label = pheno$barcode,
+  Accession  = pheno$sample_id,
+  Disease_type = sapply(pheno$disease_type, function(x) paste(x, collapse="; ")),
+  Sex    = pheno$gender,
+  Tumor_Stage = pheno$ajcc_pathologic_stage,
+  Tumor_Type = pheno$classification_of_tumor,
+  stringsAsFactors = FALSE
+)
+
+
+# match order to expression matrix rows
+sampleInfo <- sampleInfo[ match(rownames(datExprT), sampleInfo$Sample_Label), ]
+
+# check alignment
+stopifnot(identical(rownames(datExprT), sampleInfo$Sample_Label))
+
+#  SAVE TEH SAMPLEINFO CSV
+
+write.csv(
+  sampleInfo,
+  file = "TCGA_LUAD_sampleInfo_for_SampleNetwork.csv",
+  row.names = TRUE
+)
+
+# ----------------------------
+# DONE!
+# ----------------------------
