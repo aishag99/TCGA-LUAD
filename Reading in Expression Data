@@ -2,11 +2,11 @@
 install.packages(c("tidyverse", "data.table", "arrow", "duckdb"))
 #https://hbs-rcs.github.io/large_data_in_R/
 library(data.table)
-datE <- fread("C:\\Users\\9aish\\Desktop\\TCGA_LUAD_expression_matrix_for_SampleNetwork.csv")
-datS <- fread("C:\\Users\\9aish\\Downloads\\TCGA\\TCGA_LUAD_sampleInfo_for_SampleNetwork.csv")
+datE <- fread("C:\\Users\\9aish\\Documents\\TCGA_LUAD_expression_matrix_for_SampleNetwork.csv")
+datS <- fread("C:\\Users\\9aish\\Documents\\TCGA_LUAD_sampleInfo_for_SampleNetwork.csv")
 
-readLines("C:\\Users\\9aish\\Downloads\\TCGA\\TCGA_LUAD_sampleInfo_for_SampleNetwork.csv", n = 5)
-five <- names("C:\\Users\\9aish\\Downloads\\TCGA\\TCGA_LUAD_expression_matrix_for_SampleNetwork.csv")[1:5]
+#readLines("C:\\Users\\9aish\\Downloads\\TCGA\\TCGA_LUAD_sampleInfo_for_SampleNetwork.csv", n = 5)
+#five <- names("C:\\Users\\9aish\\Downloads\\TCGA\\TCGA_LUAD_expression_matrix_for_SampleNetwork.csv")[1:5]
 
 all(datS$Label==colnames(datE)[3:203])
 
