@@ -15,7 +15,7 @@ se <- GDCprepare(query)
 # 2. Expression matrix (genes x samples)
 expr_raw <- assay(se)              # rows = genes, cols = samples
 datExpr  <- log2(expr_raw + 1)
-
+datExprtT <- t(datExpr)
 # 3. Build expression file for SampleNetwork 
 # SampleNetwork expects: rows = features, cols = samples,
 # with at least 1 feature-info column (e.g. probe_sets)
